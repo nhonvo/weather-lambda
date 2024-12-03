@@ -132,5 +132,14 @@ Use the **AWS Lambda Mock Test Tool** for .NET:
    ```
 
 - Use this event in `weatherevent.json`
+- Zip publish `zip -r ../publish.zip *`
+- `dotnet publish -c Release -o ./publish`
 
 3. Use the JSON event provided above for testing.
+
+change handler in runtime
+
+enhance 
+
+setup apigateway, run schedule, step function, dynamodb
+
