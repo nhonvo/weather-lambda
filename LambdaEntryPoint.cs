@@ -2,8 +2,10 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.AspNetCoreServer;
 using Amazon.Lambda.Core;
 using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 
-// Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 namespace Weather
 {
@@ -13,10 +15,13 @@ namespace Weather
         {
             builder.UseStartup<Startup>();
         }
+
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
+
+        private static readonly string SecretKey = "very_secret_key";
 
         /// <summary>
         /// Handles incoming API Gateway requests.
@@ -28,17 +33,36 @@ namespace Weather
         {
             context.Logger.LogInformation("Processing request...");
 
-            // Check if the request or request context is null
-            if (request?.RequestContext?.Http == null)
+            // Check if the Authorization header is present
+            if (request?.Headers?.ContainsKey("Authorization") != true)
             {
                 return Task.FromResult(new APIGatewayHttpApiV2ProxyResponse
                 {
-                    StatusCode = 400,
-                    Body = JsonSerializer.Serialize(new { message = "Bad Request: Invalid Request Context" }),
+                    StatusCode = 401,
+                    Body = JsonSerializer.Serialize(new { message = "Unauthorized: Missing Authorization Header" }),
                     Headers = new Dictionary<string, string>
-            {
-                { "Content-Type", "application/json" }
+                    {
+                        { "Content-Type", "application/json" }
+                    }
+                });
             }
+
+            // Extract the token from the Authorization header
+            var token = request.Headers["Authorization"].Split(" ").Last();
+
+            // Validate the JWT Token
+            // var validationResult = ValidateJwtToken(token);
+            // if (!validationResult.IsValid)
+            if (token != SecretKey)
+            {
+                return Task.FromResult(new APIGatewayHttpApiV2ProxyResponse
+                {
+                    StatusCode = 401,
+                    Body = JsonSerializer.Serialize(new { message = "Unauthorized: Invalid or expired token" }),
+                    Headers = new Dictionary<string, string>
+                    {
+                        { "Content-Type", "application/json" }
+                    }
                 });
             }
 
@@ -59,9 +83,9 @@ namespace Weather
                     StatusCode = 200,
                     Body = JsonSerializer.Serialize(forecast),
                     Headers = new Dictionary<string, string>
-            {
-                { "Content-Type", "application/json" }
-            }
+                    {
+                        { "Content-Type", "application/json" }
+                    }
                 });
             }
 
@@ -71,15 +95,39 @@ namespace Weather
                 StatusCode = 404,
                 Body = JsonSerializer.Serialize(new { message = "Not Found" }),
                 Headers = new Dictionary<string, string>
-        {
-            { "Content-Type", "application/json" }
-        }
+                {
+                    { "Content-Type", "application/json" }
+                }
             });
         }
+
+        // Method to validate JWT token
+        //     private static (bool IsValid, string UserName) ValidateJwtToken(string token)
+        //     {
+        //         try
+        //         {
+        //             var tokenHandler = new JwtSecurityTokenHandler();
+        //             var key = System.Text.Encoding.ASCII.GetBytes(SecretKey);
+        //             var validationParameters = new TokenValidationParameters
+        //             {
+        //                 ValidateIssuer = false,
+        //                 ValidateAudience = false,
+        //                 ValidateLifetime = true,
+        //                 IssuerSigningKey = new SymmetricSecurityKey(key),
+        //                 ClockSkew = TimeSpan.Zero // Optional: Control the allowed time skew
+        //             };
+
+        //             var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+        //             var userName = principal.FindFirst(ClaimTypes.Name)?.Value;
+        //             return (true, userName);
+        //         }
+        //         catch (Exception)
+        //         {
+        //             return (false, null);
+        //         }
+        //     }
     }
-    /// <summary>
-    /// Represents a weather forecast.
-    /// </summary>
+
     public class WeatherForecast
     {
         public DateOnly Date { get; set; }
