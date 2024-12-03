@@ -1,0 +1,25 @@
+{
+    "version": "2.0",
+    "routeKey": "GET /weatherforecast",
+    "rawPath": "/weatherforecast",
+    "rawQueryString": "",
+    "headers": {
+      "Host": "localhost",
+      "User-Agent": "PostmanRuntime/7.28.4",
+      "Accept": "*/*",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Connection": "keep-alive"
+    },
+    "requestContext": {
+      "http": {
+        "method": "GET",
+        "path": "/weatherforecast",
+        "protocol": "HTTP/1.1",
+        "sourceIp": "127.0.0.1",
+        "userAgent": "PostmanRuntime/7.28.4"
+      }
+    },
+    "body": null,
+    "isBase64Encoded": false
+  }
+  
