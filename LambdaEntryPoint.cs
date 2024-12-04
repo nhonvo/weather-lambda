@@ -34,12 +34,12 @@ namespace Weather
             context.Logger.LogInformation("Processing request...");
             context.Logger.LogInformation(request?.Headers?["Authorization"]);
             // Check if the Authorization header is present
-            if (!request.Headers.TryGetValue("Authorization", out var authHeader) || authHeader != SecretKey)
+            if (request?.Headers?.ContainsKey("Authorization") == false)
             {
                 return Task.FromResult(new APIGatewayHttpApiV2ProxyResponse
                 {
                     StatusCode = 401,
-                    Body = JsonSerializer.Serialize(new { message = "Unauthorized: Missing or Invalid Authorization Header" }),
+                    Body = JsonSerializer.Serialize(new { message = "Unauthorized: Missing Authorization Header" }),
                     Headers = new Dictionary<string, string>
                     {
                         { "Content-Type", "application/json" }
@@ -53,17 +53,18 @@ namespace Weather
             // Validate the JWT Token
             // var validationResult = ValidateJwtToken(token);
             // if (!validationResult.IsValid)
-            // {
-            //     return Task.FromResult(new APIGatewayHttpApiV2ProxyResponse
-            //     {
-            //         StatusCode = 401,
-            //         Body = JsonSerializer.Serialize(new { message = "Unauthorized: Invalid or expired token" }),
-            //         Headers = new Dictionary<string, string>
-            //         {
-            //             { "Content-Type", "application/json" }
-            //         }
-            //     });
-            // }
+            if (token != SecretKey)
+            {
+                return Task.FromResult(new APIGatewayHttpApiV2ProxyResponse
+                {
+                    StatusCode = 401,
+                    Body = JsonSerializer.Serialize(new { message = "Unauthorized: Invalid or expired token" }),
+                    Headers = new Dictionary<string, string>
+                    {
+                        { "Content-Type", "application/json" }
+                    }
+                });
+            }
 
             // Routing logic based on the request path and method
             if (request.RequestContext.Http.Path == "/weatherforecast" && request.RequestContext.Http.Method == "GET")

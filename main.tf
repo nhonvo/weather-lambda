@@ -26,7 +26,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 # Upload Lambda Function
 resource "aws_lambda_function" "my_lambda_function" {
   function_name    = "MyDotNetLambda"
-  filename         = "weather.zip" # Ensure this file exists in your working directory
+  filename         = "weather1.zip" # Ensure this file exists in your working directory
   handler          = "Weather::Weather.LambdaEntryPoint::FunctionHandlerAsync"
   runtime          = "dotnet8"
   role             = aws_iam_role.lambda_role.arn
