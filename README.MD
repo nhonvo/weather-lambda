@@ -139,7 +139,4 @@ Use the **AWS Lambda Mock Test Tool** for .NET:
 
 change handler in runtime
 
-enhance 
-
-setup apigateway, run schedule, step function, dynamodb
-
+enhance: setup apigateway, run schedule, step function, dynamodb
